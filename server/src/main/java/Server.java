@@ -55,7 +55,7 @@ public class Server implements ConnectionHandler {
     }
 
 
-    public void onReceiveString(Connection connection, String value, int status) {
+    public void onReceiveString(Connection connection, String value) {
 
         if (value.startsWith("/")) {
             String command = value.substring(0, value.indexOf(" "));

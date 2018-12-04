@@ -23,7 +23,7 @@ public class ConnectionThread implements Runnable {
             logger.info("Connection on "+this.toString() +"established");
             while (!Thread.currentThread().isInterrupted()) {
                 String msg = reader.readLine();
-                handler.onReceiveString(connection, msg, 0);
+                handler.onReceiveString(connection, msg);
             }
         } catch (IOException e) {
             handler.onException(connection, e);
