@@ -1,3 +1,5 @@
+
+//Separate Thread for calculating result from jars
 public class Calculator implements Runnable {
 
     private CommandProducer commandProducer;

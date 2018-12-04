@@ -11,14 +11,13 @@ public class Client implements ConnectionHandler {
     private final static Logger logger = LogManager.getLogger("clientLog");
 
     //0 - default, 1 - custom
-    //private static InetAddress ip;
-    private String nickname = "Anonymous";
+    private String nickname = "Anonymous";//default name
     private Connection connection;
     private final int port;
     private final String ip;
 
 
-    private String status = "disconnected";
+    private String status = "disconnected";//default status
 
     public void setStatus(String status){
         this.status = status;
@@ -34,6 +33,8 @@ public class Client implements ConnectionHandler {
         return connection;
     }
 
+
+    //parse arguments if exist, else use default
     public static void main(String[] args) throws Exception {
         int flag = 1;
         int port = 9000;
@@ -62,6 +63,8 @@ public class Client implements ConnectionHandler {
         this.ip = ip;
     }
 
+
+    //create socket to connect to serversocket + init connection
     public void initConnection(){
         try {
             InetAddress ipAddr = InetAddress.getByName(this.ip);
@@ -77,10 +80,10 @@ public class Client implements ConnectionHandler {
 
 
 
+    //poll for user input and send it server socket
     public void startApplication(InputAsker asker){
-        //Scanner sc = new Scanner(System.in);
         System.out.println("Please provide your nickname, or press enter to stay anonymous.");
-//        String name = sc.nextLine();
+
         try{
             String name = asker.getInput("nickname");
             if (!name.equals("")) nickname = name;
@@ -111,24 +114,10 @@ public class Client implements ConnectionHandler {
         }
 
 
-//        while (status.equals("connected")){
-//            message = sc.nextLine();
-//            if (message.equals("exit")){
-//                logger.info("User {} requested exit. Preparing ...", this.toString());
-//                connection.sendString(message);
-//                connection.disconnect();
-//                setStatus("disconnected");
-//                logger.info("Successfully disconnected!");
-////                break;
-//            }
-//            connection.sendString(nickname+": "+message);
-//            logger.info("User {} sent message", this.toString());
-//        }
-
-        //sc.close();
     }
 
 
+    //method to execute when client socket is initialized
     public void onConnectionReady(Connection connection) {
         logger.info("Connection {} with server has been established", connection);
 
@@ -137,12 +126,14 @@ public class Client implements ConnectionHandler {
     }
 
 
+    //method to execute when a message from server is ready
     public void onReceiveString(Connection connection, String value) {
 
         System.out.println(value);
     }
 
 
+    //when socket is closed
     public void onDisconnect(Connection connection) {
         logger.info("Connection {} id closed", connection);
         System.out.println("Connection close");
@@ -150,12 +141,10 @@ public class Client implements ConnectionHandler {
     }
 
 
+    //when excpetion occurs
     public void onException(Connection connection, Exception e) {
         logger.error("Exception on connection {} ", connection, e);
         System.out.println();
     }
 
-//    private void printMessage(String msg){
-//        System.out.println(msg);
-//    }
 }

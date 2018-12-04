@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.Scanner;
 
+//Wrapper for polling for message from server
 public class InputAsker {
 
     private final Scanner scanner;

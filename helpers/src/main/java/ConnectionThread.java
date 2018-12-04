@@ -3,6 +3,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
+//Thread for reading from server or client (depends on connection)
 public class ConnectionThread implements Runnable {
 
     private final static Logger logger = LogManager.getLogger("networkLog");

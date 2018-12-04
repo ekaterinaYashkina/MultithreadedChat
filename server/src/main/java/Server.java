@@ -10,43 +10,27 @@ public class Server implements ConnectionHandler {
     private final static Logger logger = LogManager.getLogger("serverLog");
     private final static ResourceManager manager = new ResourceManager();
 
-    private String status = "disconnected";
-
-    public void setStatus(String status){
-        this.status = status;
-    }
-
-    public int countConnections(){
-        return connections.size();
-    }
-
     public static void main(String[] args) {
 
         if (args.length == 1){
             manager.setDirectory(args[0]);
         }
 
-        Server server = new Server();
-        server.startServer();
+        new Server();
     }
 
+    //Thread-access special storage
     private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
-
-    public Server(){
+    private Server(){
         try{
             manager.loadClass();
         }
         catch (ClassNotFoundException e){
             logger.warn("No needed classes in JAR");
         }
-
-    }
-
-    public void startServer(){
         try (ServerSocket socket = new ServerSocket(9000)){
-            setStatus("connected");
             logger.info("Running.....");
-            while(status.equals("connected")){
+            while(true){
                 try{
                     new Connection(this, socket.accept());
                 }catch(IOException e){
@@ -54,16 +38,11 @@ public class Server implements ConnectionHandler {
                 }
             }
         }catch (IOException e){
-            setStatus("disconnected");
             throw new RuntimeException(e);
         }
     }
 
-//    public synchronized boolean disconnectUser(Connection connection){
-//
-//    }
-
-
+    //When a user is connected
     public synchronized void onConnectionReady(Connection connection) {
         connections.add(connection);
         logger.info("New connection "+connection+"has been established");
@@ -72,31 +51,44 @@ public class Server implements ConnectionHandler {
     }
 
 
+    //process input and send result or calculate or close the resources based on it
     public void onReceiveString(Connection connection, String value) {
-
-        if (value.startsWith("/")) {
-            String command = value.substring(0, value.indexOf(" "));
-            String[] params = value.substring(value.indexOf(" ")).split(" ");
+        String withoutNickname = value.substring(value.indexOf(":")+2);
+        System.out.println(withoutNickname);
+        if (withoutNickname.startsWith("/")) {
+            String command;
+            String[] params = null;
+            if (withoutNickname.contains(" ")){
+                command = withoutNickname.substring(0, withoutNickname.indexOf(" "));
+                System.out.println(command);
+                params = withoutNickname.substring(withoutNickname.indexOf(" ")+1).split(" ");
+                System.out.println(params.length);}
+            else command = withoutNickname;
             CommandProducer result = manager.caluculate(command);
-            if (result == null) connection.sendString("No such command");
+            if (result == null) {
+                connection.sendString("No such command");
+                return;
+            }
             try{
-            Calculator calc = new Calculator(result, params, connection);
-            Thread calculation = new Thread(calc);
-            calculation.start();}
-            catch (IllegalArgumentException e){
+                Calculator calc = new Calculator(result, params, connection);
+                Thread calculation = new Thread(calc);
+                calculation.start();}
+            catch (IllegalArgumentException e) {
                 logger.warn(e);
                 connection.sendString(e.getMessage());
+
             }
 
 
         }
-        else if (value.equals("exit")){
+        else if (withoutNickname.equals("exit")){
             connection.disconnect();
         }
         else broadcast(value, connection);
     }
 
 
+    //Close connection passed
     public synchronized void onDisconnect(Connection connection) {
         connections.remove(connection);
         logger.info("Connection "+connection+" is closing...");
@@ -109,6 +101,7 @@ public class Server implements ConnectionHandler {
         logger.error("Exception occurred", e);
     }
 
+    //Send message everybody except the one that actually sent the message
     private synchronized void broadcast(String msg, Connection listn){
 
         final int size = connections.size();

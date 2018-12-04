@@ -1,3 +1,6 @@
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -5,8 +8,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 
+
+//Load jars and save the common resources for further usage
 public class ResourceManager {
 
+    private final static Logger logger = LogManager.getLogger("pluginsLog");
     private String directory = "plugins";
 
     public String getDirectory(){
@@ -36,27 +42,28 @@ public class ResourceManager {
                     ClassLoader loader = new URLClassLoader(urls);
 
                     String className = jar.toString().split(".jar")[0];
+                    System.out.println(className);
                     Class classLoad = loader.loadClass(className);
                     CommandProducer prod = (CommandProducer) classLoad.newInstance();
                     String opertaion = prod.getInvokationCommand();
+                    System.out.println(opertaion);
                     append(prod, opertaion);
-//                commands.put(opertaion, prod);
-                    // Apparently its bad to use Class.newInstance, so we use
-                    // newClass.getConstructor() instead
+                    logger.info("Loaded jar: {}", className);
 
                 } catch (MalformedURLException e) {
-                    e.printStackTrace();
+                    logger.error(e);
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    logger.error(e);
                 } catch (InstantiationException e) {
-                    e.printStackTrace();
+                    logger.error(e);
                 } catch (NullPointerException e) {
-                    e.printStackTrace();
+                    logger.error(e);
                 }
             }
         }
         else {
             System.out.println("Wrong path to plugins, no support for plugins will be provided.");
+            logger.warn("Wrong path to plugins, no support for plugins will be provided.");
         }
 
     }
