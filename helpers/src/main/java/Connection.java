@@ -14,6 +14,11 @@ public class Connection  {
     private final ConnectionHandler listener;
     private final BufferedWriter writer;
 
+    public Socket getSocket(){
+        System.out.println(this.socket);
+        return socket;
+    }
+
 
     public Connection(ConnectionHandler listener, InetAddress ip, int port) throws IOException {
         this(listener, new Socket(ip, port));

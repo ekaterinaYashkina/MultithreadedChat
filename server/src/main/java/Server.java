@@ -10,27 +10,43 @@ public class Server implements ConnectionHandler {
     private final static Logger logger = LogManager.getLogger("serverLog");
     private final static ResourceManager manager = new ResourceManager();
 
+    private String status = "disconnected";
+
+    public void setStatus(String status){
+        this.status = status;
+    }
+
+    public int countConnections(){
+        return connections.size();
+    }
+
     public static void main(String[] args) {
 
         if (args.length == 1){
             manager.setDirectory(args[0]);
         }
 
-        new Server();
+        Server server = new Server();
+        server.startServer();
     }
 
     private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
 
-    private Server(){
+    public Server(){
         try{
             manager.loadClass();
         }
         catch (ClassNotFoundException e){
             logger.warn("No needed classes in JAR");
         }
+
+    }
+
+    public void startServer(){
         try (ServerSocket socket = new ServerSocket(9000)){
+            setStatus("connected");
             logger.info("Running.....");
-            while(true){
+            while(status.equals("connected")){
                 try{
                     new Connection(this, socket.accept());
                 }catch(IOException e){
@@ -38,6 +54,7 @@ public class Server implements ConnectionHandler {
                 }
             }
         }catch (IOException e){
+            setStatus("disconnected");
             throw new RuntimeException(e);
         }
     }
